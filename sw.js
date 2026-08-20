@@ -1,7 +1,7 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v12";
+const CACHE_NAME = "fanuc-macro-reference-v13";
 const APP_FILES = [
-  "./?v=12",
+  "./?v=13",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
@@ -44,7 +44,7 @@ self.addEventListener("fetch", event => {
           return response;
         })
         .catch(() => caches.match(request).then(cached =>
-          cached || caches.match("./?v=12") || caches.match("./index.html")
+          cached || caches.match("./?v=13") || caches.match("./index.html")
         ))
     );
     return;
