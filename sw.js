@@ -1,7 +1,7 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v11";
+const CACHE_NAME = "fanuc-macro-reference-v12";
 const APP_FILES = [
-  "./",
+  "./?v=12",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
@@ -19,7 +19,9 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -27,15 +29,35 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+  const request = event.request;
+  const isPage =
+    request.mode === "navigate" ||
+    request.destination === "document" ||
+    request.url.endsWith("/index.html");
 
-      return fetch(event.request).then(response => {
+  if (isPage) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request).then(cached =>
+          cached || caches.match("./?v=12") || caches.match("./index.html")
+        ))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then(cached => {
+      if (cached) return cached;
+      return fetch(request).then(response => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
         return response;
-      }).catch(() => caches.match("./index.html"));
+      });
     })
   );
 });
