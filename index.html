@@ -1256,7 +1256,11 @@ function initMacroTools(){
     const results=document.getElementById("search-results");
     if(results) results.innerHTML="";
 
-    input.focus();
+    // Do not focus the lookup field after Reset All.
+    // On Android, focusing it opens the numeric keyboard.
+    if(document.activeElement && typeof document.activeElement.blur==="function"){
+      document.activeElement.blur();
+    }
   });
   input.addEventListener("keydown",e=>{if(e.key==="Enter")performLookup(input.value);});
   const printReference = ()=>{
