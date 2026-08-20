@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v2";
+const CACHE_NAME = "fanuc-macro-reference-v3";
 const APP_FILES = [
   "./",
   "./index.html",

@@ -1387,15 +1387,6 @@ function initMacroTools(){
         <div class="print-footer">
           FANUC Macro Reference · Interactive edition · Complete print reference
         </div>
-      
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-</script>
 </body>
       </html>
     `);
@@ -1494,6 +1485,13 @@ function render(){
 render();
 initEnhancements();
 initMacroTools();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
