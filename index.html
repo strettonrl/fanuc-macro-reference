@@ -648,6 +648,85 @@
   }
 }
 
+
+/* ===== PHONE LANDSCAPE ===== */
+@media (max-width:760px) and (orientation:landscape){
+  body{
+    min-height:100dvh;
+    overflow-x:hidden;
+  }
+  header .inner{
+    min-height:52px;
+    padding:7px 14px;
+  }
+  .fanuc-logo{
+    width:105px;
+    max-height:32px;
+  }
+  nav{
+    top:52px;
+    grid-template-columns:repeat(6,minmax(90px,1fr));
+    padding:5px 8px;
+    gap:5px;
+  }
+  .navkey{
+    min-height:40px;
+    flex-direction:row;
+    gap:5px;
+    font-size:9px;
+    white-space:nowrap;
+  }
+  .navkey .num{
+    font-size:11px;
+  }
+  .print-navkey{
+    grid-column:auto;
+    margin-top:0;
+  }
+  main{
+    padding:14px 18px 24px;
+  }
+  .control-strip{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:8px;
+  }
+  .lookup-box input{
+    min-height:42px;
+  }
+  .panel-action{
+    min-height:42px;
+    padding:8px 11px;
+  }
+  .field-row{
+    flex-direction:row;
+    align-items:flex-end;
+    gap:12px;
+  }
+  .field{
+    min-width:0;
+  }
+  select,input[type=number]{
+    min-height:42px;
+  }
+  .readout-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .crt{
+    padding:12px;
+  }
+  .panel-title{
+    font-size:24px;
+  }
+  .panel-desc{
+    font-size:12px;
+    margin-bottom:16px;
+  }
+  .reset-area .reset-action{
+    width:auto;
+    min-width:150px;
+  }
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
