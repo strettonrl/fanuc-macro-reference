@@ -759,6 +759,43 @@
     overflow:visible !important;
   }
 }
+
+/* ===== INSTALLED ANDROID PWA SCROLL FIX ===== */
+@media (display-mode:standalone), (display-mode:fullscreen){
+  html{
+    height:auto !important;
+    min-height:100% !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+  }
+  body{
+    display:block !important;
+    height:auto !important;
+    min-height:100% !important;
+    overflow:visible !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:auto !important;
+    touch-action:auto !important;
+  }
+  .shell{
+    display:block !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+    padding-bottom:40px !important;
+  }
+  header,
+  nav{
+    position:static !important;
+  }
+  main{
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
