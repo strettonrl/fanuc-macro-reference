@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FANUC Macro Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1b1f24;
+    --panel:#242a31;
+    --panel-raised:#2c333b;
+    --panel-line:#3a4149;
+    --amber:#ffb020;
+    --amber-dim:#b97e13;
+    --amber-glow: rgba(255,176,32,0.35);
+    --text:#e9e7e0;
+    --text-dim:#9aa4ac;
+    --text-faint:#6b747c;
+    --danger:#e2574c;
+    --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, #232a31 0%, var(--bg) 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  ::selection{background:var(--amber-glow);}
+
+  /* ---------- header ---------- */
+  header{
+    padding:22px 28px 18px;
+    border-bottom:1px solid var(--panel-line);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .fanuc-logo{
+    display:block;
+    width:150px;
+    height:auto;
+    max-height:48px;
+    object-fit:contain;
+  }
+  .brand .plate{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--bg);
+    background:var(--amber);
+    padding:3px 8px;
+    border-radius:2px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.02em;
+    margin:0;
+    color:var(--text);
+  }
+  header .sub{
+    font-size:12.5px;
+    color:var(--text-faint);
+    font-family:'Space Mono', monospace;
+  }
+
+  /* ---------- layout ---------- */
+  .shell{
+    flex:1;
+    display:flex;
+    max-width:1180px;
+    width:100%;
+    margin:0 auto;
+    padding:26px 24px 60px;
+    gap:24px;
+  }
+  @media (max-width:760px){
+    .shell{flex-direction:column; padding:18px 14px 40px;}
+  }
+
+  /* ---------- nav (control panel keys) ---------- */
+  nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-width:196px;
+  }
+  @media (max-width:760px){
+    nav{flex-direction:row; flex-wrap:wrap; min-width:0;}
+  }
+  .navkey{
+    all:unset;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-left:3px solid transparent;
+    border-radius:var(--radius);
+    color:var(--text-dim);
+    font-family:'Oswald', sans-serif;
+    font-size:14px;
+    letter-spacing:.02em;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .navkey .num{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    width:16px;
+  }
+  .navkey:hover{background:var(--panel-raised); color:var(--text);}
+  .navkey:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .navkey.active{
+    background:var(--panel-raised);
+    color:var(--amber);
+    border-left-color:var(--amber);
+  }
+  .navkey.active .num{color:var(--amber-dim);}
+
+  /* ---------- main panel ---------- */
+  main{
+    flex:1;
+    min-width:0;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:6px;
+    padding:26px 28px 30px;
+  }
+  .panel-title{
+    font-family:'Oswald', sans-serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .panel-desc{
+    color:var(--text-faint);
+    font-size:13px;
+    line-height:1.55;
+    margin:0 0 22px;
+    max-width:none;
+    width:100%;
+  }
+
+  .field-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:170px;
+  }
+  .field label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--text-faint);
+    font-family:'Oswald', sans-serif;
+  }
+  select, input[type=number]{
+    background:var(--panel-raised);
+    border:1px solid var(--panel-line);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    padding:9px 10px;
+    border-radius:var(--radius);
+    min-width:190px;
+  }
+  input[type=number]{min-width:110px;}
+  select:focus, input:focus{outline:2px solid var(--amber); outline-offset:1px;}
+
+  .hint{
+    font-size:12px;
+    color:var(--text-faint);
+    margin-top:2px;
+  }
+  .hint.warn{color:var(--amber-dim);}
+
+  /* ---------- CRT readout ---------- */
+  .crt{
+    margin-top:6px;
+    background:#0f0d08;
+    border:1px solid #3a2c0f;
+    border-radius:6px;
+    padding:18px 20px 16px;
+    position:relative;
+    overflow:hidden;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.6);
+  }
+  .crt::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,176,32,0.05) 0px,
+      rgba(255,176,32,0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events:none;
+  }
+  .crt-label{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--amber-dim);
+    margin-bottom:10px;
+  }
+  .crt-empty{
+    font-family:'Space Mono', monospace;
+    color:var(--amber-dim);
+    font-size:13px;
+    padding:10px 0 4px;
+  }
+  .readout-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:14px 22px;
+  }
+  .readout-item{
+    position:relative;
+  }
+  .readout-item .axis{
+    font-family:'Oswald', sans-serif;
+    font-size:11px;
+    letter-spacing:.06em;
+    color:#c98a2f;
+    text-transform:uppercase;
+    margin-bottom:2px;
+  }
+  .readout-item .macro{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:26px;
+    color:var(--amber);
+    text-shadow:0 0 10px var(--amber-glow), 0 0 2px var(--amber-glow);
+    letter-spacing:.02em;
+  }
+  .crt .g10{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px dashed #3a2c0f;
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    color:#e0a233;
+  }
+  .crt .note{
+    margin-top:10px;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:#c98a2f;
+  }
+  .crt .syntax{
+    font-family:'Space Mono', monospace;
+    font-size:24px;
+    font-weight:700;
+    color:var(--amber);
+    text-shadow:0 0 10px var(--amber-glow);
+  }
+
+  footer{
+    text-align:center;
+    color:var(--text-faint);
+    font-size:11.5px;
+    padding:18px 20px 26px;
+    font-family:'Space Mono', monospace;
+  }
+  footer span{color:var(--text-dim);}
+
+  /* ---------- enhanced UI ---------- */
+  :root{
+    --amber-soft:rgba(255,176,32,.10);
+    --panel-deep:#171b20;
+    --success:#78c091;
+  }
+  body{background:
+    radial-gradient(circle at 10% 0%, rgba(255,176,32,.07), transparent 28%),
+    radial-gradient(circle at 90% 100%, rgba(255,176,32,.035), transparent 30%),
+    var(--bg);}
+  header{position:sticky;top:0;z-index:20;background:rgba(27,31,36,.94);backdrop-filter:blur(10px);}
+  .brand .plate{box-shadow:0 0 18px rgba(255,176,32,.14);}
+  .shell{max-width:1320px;gap:18px;}
+  nav{min-width:220px;position:sticky;top:92px;align-self:flex-start;}
+  .navkey{position:relative;overflow:hidden;}
+  .navkey::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,176,32,.07),transparent 65%);opacity:0;transition:opacity .15s;}
+  .navkey:hover::after,.navkey.active::after{opacity:1;}
+  main{box-shadow:0 16px 50px rgba(0,0,0,.18);}
+  .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:-4px 0 20px;}
+  .search-wrap{position:relative;flex:1;min-width:240px;}
+  .search-wrap input{width:100%;background:var(--panel-deep);border:1px solid var(--panel-line);color:var(--text);padding:10px 12px 10px 36px;border-radius:var(--radius);font:14px 'IBM Plex Sans',sans-serif;}
+  .search-wrap input:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:14px;}
+  .action-btn{border:1px solid var(--panel-line);background:var(--panel-raised);color:var(--text-dim);padding:9px 12px;border-radius:var(--radius);cursor:pointer;font:500 12px 'Oswald',sans-serif;letter-spacing:.04em;text-transform:uppercase;}
+  .action-btn:hover{color:var(--amber);border-color:var(--amber-dim);}
+  .field-row{align-items:flex-end;}
+  .field{flex:1;}
+  select,input[type=number]{width:100%;max-width:320px;}
+  .crt{box-shadow:inset 0 0 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,176,32,.03);}
+  .readout-item{padding:10px;border:1px solid rgba(255,176,32,.10);background:rgba(255,176,32,.025);border-radius:3px;}
+  .readout-item:hover{background:rgba(255,176,32,.055);}
+  .copy-row{display:flex;justify-content:flex-end;margin-top:12px;}
+  .status{font:11px 'Space Mono',monospace;color:var(--success);opacity:0;transition:opacity .2s;}
+  .status.show{opacity:1;}
+  .empty-search{padding:14px;color:var(--text-faint);font-size:13px;}
+  .shortcut{margin-top:12px;color:var(--text-faint);font-size:11px;}
+  @media (max-width:760px){
+    nav{position:static;}
+    .shell{gap:14px;}
+    main{padding:20px 16px 24px;}
+    .toolbar{margin-top:0;}
+  }
+
+
+/* ===== FANUC CONTROL-PANEL UPGRADE ===== */
+.control-strip{
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto auto;
+  gap:10px;
+  align-items:center;
+  margin-bottom:18px;
+}
+.lookup-box{
+  position:relative;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+.lookup-box label,.quick-label{
+  display:block;
+  font:11px 'Oswald',sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--text-faint);
+  margin-bottom:6px;
+}
+.lookup-box input{
+  width:100%;
+  background:#11151a;
+  border:1px solid var(--panel-line);
+  color:var(--amber);
+  padding:11px 12px;
+  border-radius:var(--radius);
+  font:700 16px 'Space Mono',monospace;
+}
+.lookup-box input::placeholder{color:#596169;font-weight:400;}
+.lookup-box .hint{
+  margin-top:7px;
+  line-height:1.3;
+}
+.panel-action{
+  align-self:center;
+  border:1px solid var(--panel-line);
+  background:var(--panel-raised);
+  color:var(--text-dim);
+  padding:10px 13px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  font:600 11px 'Oswald',sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.panel-action:hover{color:var(--amber);border-color:var(--amber-dim);}
+.reset-action{margin-left:2px;}
+.reset-area{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:24px;
+  padding-top:16px;
+  border-top:1px solid var(--panel-line);
+}
+
+
+.print-navkey{margin-top:8px;border-top-color:var(--amber-dim);}
+.print-navkey:hover{color:var(--amber);border-left-color:var(--amber);}
+
+.panel-action.primary{color:var(--bg);background:var(--amber);border-color:var(--amber);}
+.panel-action.primary:hover{filter:brightness(1.05);}
+.lookup-result{
+  margin:0 0 18px;
+  padding:15px 17px;
+  background:#11151a;
+  border:1px solid #4b3918;
+  border-left:3px solid var(--amber);
+  border-radius:var(--radius);
+}
+.lookup-result .result-title{font:600 16px 'Oswald',sans-serif;color:var(--amber);margin-bottom:5px;}
+.lookup-result .result-meta{font-size:12px;color:var(--text-dim);line-height:1.5;}
+.lookup-result .result-macro{font:700 24px 'Space Mono',monospace;color:var(--amber);margin-top:7px;}
+.quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:22px;}
+.quick-btn{
+  text-align:left;
+  padding:10px 11px;
+  background:var(--panel-deep);
+  border:1px solid var(--panel-line);
+  color:var(--text-dim);
+  border-radius:var(--radius);
+  cursor:pointer;
+  font:12px 'IBM Plex Sans',sans-serif;
+}
+.quick-btn strong{display:block;color:var(--text);font:600 12px 'Oswald',sans-serif;margin-bottom:3px;}
+.quick-btn small{color:var(--text-faint);}
+.quick-btn:hover{border-color:var(--amber-dim);color:var(--text);}
+.history-section{margin-top:22px;padding-top:16px;border-top:1px dashed var(--panel-line);}
+.history-title{font:11px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:8px;}
+.history-list{display:flex;flex-wrap:wrap;gap:7px;}
+.history-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--panel-line);background:var(--panel-deep);
+  padding:7px 9px;border-radius:3px;color:var(--text-dim);
+  cursor:pointer;font:11px 'Space Mono',monospace;
+}
+.history-chip:hover{border-color:var(--amber-dim);color:var(--amber);}
+.star-btn{
+  border:0;background:transparent;color:var(--text-faint);cursor:pointer;
+  font-size:18px;line-height:1;padding:0 2px;
+}
+.star-btn.active{color:var(--amber);}
+.favourite-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.print-note{margin-top:12px;color:var(--text-faint);font-size:11px;}
+@media (max-width:900px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media (max-width:650px){
+  .control-strip{grid-template-columns:1fr 1fr;}
+  .lookup-box{grid-column:1/-1;}
+  .quick-grid{grid-template-columns:1fr 1fr;}
+}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  html,body{background:#fff!important;color:#111!important;}
+  body{display:block!important;min-height:auto!important;}
+  header,nav,.toolbar,.control-strip,.quick-grid,.history-section,footer,
+  #lookup-result,.print-note,.copy-row{display:none!important;}
+  .shell{display:block!important;max-width:none!important;width:auto!important;margin:0!important;padding:0!important;}
+  main{display:block!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important;}
+  #main-content{display:block!important;}
+  .panel-title{color:#111!important;font-size:20px!important;}
+  .panel-desc,.hint,.field label{color:#555!important;}
+  .field-row{margin-bottom:14px!important;}
+  select,input[type=number]{border:1px solid #999!important;background:#fff!important;color:#111!important;}
+  .crt{background:#111!important;color:#fff!important;border:1px solid #333!important;break-inside:avoid!important;box-shadow:none!important;}
+  .crt::before{display:none!important;}
+  .crt .crt-label,.crt .axis,.crt .note,.crt .g10{color:#ddd!important;}
+  .crt .macro,.crt .syntax{color:#ffb020!important;text-shadow:none!important;}
+  .readout-item{border:1px solid #555!important;background:#191919!important;}
+}
+
+
+/* ===== MOBILE / PWA LAYOUT ===== */
+@media (max-width: 760px){
+  html,body{
+    width:100%;
+    overflow-x:hidden;
+    -webkit-text-size-adjust:100%;
+    overscroll-behavior-y:none;
+  }
+  body{
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    position:sticky;
+    top:0;
+    z-index:50;
+    padding-top:env(safe-area-inset-top);
+  }
+  header .inner{
+    min-height:64px;
+    padding:10px 14px;
+  }
+  .fanuc-logo{
+    width:118px;
+    max-height:38px;
+  }
+  .shell{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    gap:0;
+    padding:0;
+  }
+  nav{
+    position:sticky;
+    top:64px;
+    z-index:40;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:4px;
+    width:100%;
+    min-width:0;
+    padding:8px;
+    background:rgba(27,31,36,.97);
+    border-bottom:1px solid var(--panel-line);
+    overflow-x:auto;
+  }
+  .navkey{
+    min-width:0;
+    min-height:52px;
+    padding:7px 4px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    font-size:10px;
+    text-align:center;
+    white-space:normal;
+  }
+  .navkey .num{
+    font-size:13px;
+    line-height:1;
+  }
+  .print-navkey{
+    grid-column:1/-1;
+    min-height:42px;
+    flex-direction:row;
+    gap:7px;
+    margin-top:2px;
+  }
+  main{
+    width:100%;
+    min-width:0;
+    border-radius:0;
+    border-left:0;
+    border-right:0;
+    padding:18px 14px 30px;
+    box-shadow:none;
+  }
+  .toolbar{
+    margin:0 0 12px;
+  }
+  .toolbar .search-wrap{
+    min-width:0;
+  }
+  .control-strip{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:7px;
+    align-items:end;
+  }
+  .lookup-box input{
+    min-height:48px;
+    font-size:16px;
+  }
+  .panel-action{
+    min-height:48px;
+    padding:10px 11px;
+    white-space:nowrap;
+    touch-action:manipulation;
+  }
+  .lookup-box .hint{
+    font-size:10px;
+  }
+  .panel-title{
+    font-size:28px;
+    line-height:1.05;
+  }
+  .panel-desc{
+    font-size:13px;
+    line-height:1.5;
+    max-width:none;
+  }
+  select,input[type=number]{
+    min-height:48px;
+    font-size:16px;
+  }
+  .field-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+  .field{
+    width:100%;
+  }
+  .crt{
+    padding:14px;
+    overflow-x:auto;
+  }
+  .readout-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .readout-item .macro{
+    font-size:18px;
+  }
+  .lookup-result{
+    padding:12px;
+  }
+  .quick-grid{
+    grid-template-columns:1fr 1fr;
+  }
+  .history-section{
+    margin-top:18px;
+  }
+  .reset-area{
+    justify-content:center;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .reset-area .reset-action{
+    width:100%;
+    min-height:48px;
+  }
+}
+@media (max-width:430px){
+  nav{
+    grid-template-columns:repeat(5,minmax(58px,1fr));
+    overflow-x:auto;
+  }
+  .navkey{
+    font-size:9px;
+  }
+  .control-strip{
+    grid-template-columns:1fr 1fr;
+  }
+  .lookup-box{
+    grid-column:1/-1;
+  }
+  .lookup-box .hint{
+    margin-bottom:1px;
+  }
+  .panel-action{
+    width:100%;
+  }
+  .readout-grid{
+    grid-template-columns:1fr;
+  }
+}
+@media (display-mode: standalone){
+  header{
+    padding-top:env(safe-area-inset-top);
+  }
+}
+
+</style>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b1f24">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FANUC Macro Reference">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img class="fanuc-logo" src="data:image/png;base64,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" alt="FANUC">
+    <h1>Macro Variable Reference</h1>
+  </div>
+</header>
+
+<div class="shell">
+  <nav id="nav"></nav>
+  <main id="main">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="global-search" type="search" placeholder="Search sections, variables or operations…" autocomplete="off" aria-label="Search macro reference">
+      </div>
+      <button class="action-btn" id="clear-search" type="button">Clear</button>
+    </div>
+    <div id="search-results"></div>
+    <section class="control-strip" aria-label="Macro tools">
+      <div class="lookup-box">
+        <label for="macro-lookup">Direct macro lookup</label>
+        <input id="macro-lookup" type="text" inputmode="numeric"
+               placeholder="Enter # number, e.g. 5221" autocomplete="off"
+               aria-describedby="lookup-help">
+        <div id="lookup-help" class="hint">Press Enter to find the matching reference.</div>
+      </div>
+      <button class="panel-action primary" id="lookup-btn" type="button">Lookup #</button>
+      <button class="panel-action" id="lookup-clear-btn" type="button">Clear</button>
+    </section>
+    <div id="lookup-result" aria-live="polite"></div>
+    <div id="main-content"></div>
+    <div id="history-host"></div>
+    <div class="reset-area">
+      <button class="panel-action reset-action" id="reset-all-btn" type="button">Reset All</button>
+    </div>
+    <div class="print-note">Tip: use Direct Macro Lookup for a known # number, or use the section controls for a contextual reference.</div>
+  </main>
+</div>
+
+<footer>FANUC Macro Reference &middot; Interactive edition &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
+
+<script>
+/* ---------------- data ---------------- */
+
+const AXES6 = ["X axis","Y axis","Z axis","4th axis","5th axis","6th axis"];
+const AXES6_BLOCK = ["X axis","Y axis","Z axis","A axis","B axis","C axis"];
+
+const FIXTURE_FIXED = {
+  "EXT": 5200,
+  "G54": 5220,
+  "G55": 5240,
+  "G56": 5260,
+  "G57": 5280,
+  "G58": 5300,
+  "G59": 5320,
+};
+
+const ASCII_TABLE = {
+  A:1, B:2, C:3, D:7, E:8, F:9, H:11, I:4, J:5, K:6, M:13,
+  Q:17, R:18, S:19, T:20, U:21, V:22, W:23, X:24, Y:25, Z:26
+};
+
+const CONTROL_VARS = {
+  "Program dwell":  { macros:[{label:"Macro", n:3006}], note:"#3006 = 'number' (text)" },
+  "Alarm":          { macros:[{label:"Macro", n:3000}], note:"#3000 = 'number' (text)" },
+  "B Code":         { macros:[{label:"Macro", n:4102}] },
+  "D Code":         { macros:[{label:"Macro", n:4107}] },
+  "F Code":         { macros:[{label:"Macro", n:4109}] },
+  "H Code":         { macros:[{label:"Macro", n:4111}] },
+  "M Code":         { macros:[{label:"Macro", n:4113}] },
+  "S Code":         { macros:[{label:"Macro", n:4119}] },
+  "T Code":         { macros:[{label:"Macro", n:4120}] },
+  "P Code":         { macros:[{label:"Macro", n:4130}] },
+  "Sequence No.":   { macros:[{label:"Macro", n:4114}] },
+  "Program No.":    { macros:[{label:"Macro", n:4115}] },
+  "Block end position":  { macros: AXES6_BLOCK.map((a,i)=>({label:a, n:5001+i})) },
+  "Machine position":    { macros: AXES6.map((a,i)=>({label:a, n:5021+i})) },
+  "Workpiece position":  { macros: AXES6.map((a,i)=>({label:a, n:5041+i})) },
+};
+
+const MATH_OPS = {
+  "Define":            { syntax:"#i = #j" },
+  "Add":               { syntax:"#i = #j + #k" },
+  "Subtract":          { syntax:"#i = #j - #k" },
+  "Multiply":          { syntax:"#i = #j * #k" },
+  "Divide":            { syntax:"#i = #j / #k" },
+  "Logical Product":   { syntax:"#i = #j AND #k" },
+  "Logical Sum":       { syntax:"#i = #j OR #k" },
+  "Sine":              { syntax:"#i = SIN[#j]" },
+  "Arc Sine":          { syntax:"#i = ASIN[#j]" },
+  "Cosine":            { syntax:"#i = COS[#j]" },
+  "Arc Cosine":        { syntax:"#i = ACOS[#j]" },
+  "Tangent":           { syntax:"#i = TAN[#j]" },
+  "Arc Tangent":       { syntax:"#i = ATAN[#j] / [#k]" },
+  "Square Root":       { syntax:"#i = SQRT[#j]" },
+  "Absolute":          { syntax:"#i = ABS[#j]" },
+  "Round Off":         { syntax:"#i = ROUND[#j]" },
+  "Fractions Down":    { syntax:"#i = FIX[#j]", note:"Discards the fractional part (rounds toward zero)." },
+  "Fractions Up":      { syntax:"#i = FUP[#j]", note:"Adds 1 for any non-zero fraction (rounds away from zero)." },
+  "Logarithm":         { syntax:"#i = LN[#j]" },
+};
+
+const SECTIONS = [
+  { id:"fixture", label:"Fixture Offsets" },
+  { id:"tool",    label:"Tool Offsets" },
+  { id:"ascii",   label:"ASCII Codes" },
+  { id:"control", label:"Control Variables" },
+  { id:"math",    label:"Math Syntax" },
+];
+
+let active = "fixture";
+
+/* ---------------- render helpers ---------------- */
+
+function crtReadout(items){
+  if(!items || !items.length) return `<div class="crt-empty">// awaiting selection</div>`;
+  return `<div class="readout-grid">${items.map(it=>`
+    <div class="readout-item">
+      <div class="axis">${it.label}</div>
+      <div class="macro">#${it.n}</div>
+    </div>`).join("")}</div>
+    <div class="copy-row">
+      <span class="status" id="copy-status">Copied</span>
+      <button class="action-btn copy-macros" type="button">Copy macros</button>
+    </div>`;
+} 
+
+function copyReadout(button){
+  const crt = button.closest(".crt");
+  const values = [...crt.querySelectorAll(".readout-item .macro")].map(el=>el.textContent.trim()).join("\n");
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(values).then(()=>{
+      const status = crt.querySelector(".status");
+      if(status){ status.classList.add("show"); setTimeout(()=>status.classList.remove("show"),1200); }
+    });
+  }
+}
+
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = SECTIONS.map((s,i)=>`
+    <button class="navkey ${s.id===active?'active':''}" data-id="${s.id}">
+      <span class="num">${String(i+1).padStart(2,'0')}</span>${s.label}
+    </button>`).join("") + `
+    <button class="navkey print-navkey" type="button" data-print-reference>
+      <span class="num">06</span>Print Reference
+    </button>`;
+  nav.querySelectorAll(".navkey").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ active = btn.dataset.id; render(); });
+  });
+}
+
+
+function showMacroReadout(id){
+  const panel = document.getElementById(id)?.closest(".macro-readout-panel");
+  if(panel) panel.style.display = "";
+}
+
+/* ---------------- section renderers ---------------- */
+
+function renderFixture(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">Fixture Offsets</p>
+    <p class="panel-desc">Work coordinate system macro variables — standard G54&ndash;G59, EXT, and extended G54.1 / G54.2.</p>
+    <div class="field-row">
+      <div class="field">
+        <label for="fx-select">Coordinate system</label>
+        <select id="fx-select">
+          <option value="">Please choose</option>
+          ${["EXT","G54","G55","G56","G57","G58","G59","G54.1","G54.2"].map(v=>`<option value="${v}">${v}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field" id="fx-num-field" style="display:none;">
+        <label id="fx-num-label" for="fx-num">Offset number</label>
+        <input type="number" id="fx-num" min="1" value="1">
+      </div>
+    </div>
+    <div class="crt macro-readout-panel" style="display:none;">
+      <div class="crt-label">macro readout</div>
+      <div id="fx-out"><div class="crt-empty">// awaiting selection</div></div>
+      <div id="fx-g10"></div>
+    </div>
+  `;
+
+  const sel = document.getElementById("fx-select");
+  const numField = document.getElementById("fx-num-field");
+  const numLabel = document.getElementById("fx-num-label");
+  const num = document.getElementById("fx-num");
+  const out = document.getElementById("fx-out");
+  const g10 = document.getElementById("fx-g10");
+
+  function update(){
+    const v = sel.value;
+    g10.innerHTML = "";
+    if(!v){ out.innerHTML = ""; numField.style.display="none"; return; }
+    showMacroReadout("fx-out");
+
+    if(v === "G54.1"){
+      numField.style.display = "flex";
+      numLabel.textContent = "Offset number";
+      num.min = 1; num.max = 300;
+      const n = parseInt(num.value || "1", 10);
+      const base = 6980 + 20*n;
+      out.innerHTML = crtReadout(AXES6.map((a,i)=>({label:a, n:base+i+1})));
+      g10.innerHTML = `<div class="g10">G10 L20 P${n}</div>`;
+    } else if(v === "G54.2"){
+      numField.style.display = "flex";
+      numLabel.textContent = "Offset number (P)";
+      num.min = 1; num.max = 300;
+      const n = parseInt(num.value || "1", 10);
+      const base = 5500 + 20*n;
+      out.innerHTML = crtReadout(AXES6.map((a,i)=>({label:a, n:base+i+1})));
+      g10.innerHTML = `<div class="g10">G10 L21 P${n}</div>`;
+    } else {
+      numField.style.display = "none";
+      const base = FIXTURE_FIXED[v];
+      out.innerHTML = crtReadout(AXES6.map((a,i)=>({label:a, n:base+i+1})));
+    }
+  }
+
+  sel.addEventListener("change", update);
+  num.addEventListener("input", update);
+}
+
+function renderTool(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">Tool Offsets</p>
+    <p class="panel-desc">Tool offset macro variables by register type. Type A is a single register, Type B splits length/radius, Type C splits length/wear/radius/wear.</p>
+    <div class="field-row">
+      <div class="field">
+        <label for="tl-type">Offset type</label>
+        <select id="tl-type">
+          <option value="">Please choose</option>
+          <option value="A">Offset type A</option>
+          <option value="B">Offset type B</option>
+          <option value="C">Offset type C</option>
+        </select>
+      </div>
+      <div class="field" id="tl-num-field" style="display:none;">
+        <label for="tl-num">Offset number (1–200)</label>
+        <input type="number" id="tl-num" min="1" max="200" value="1">
+      </div>
+    </div>
+    <div class="crt macro-readout-panel" style="display:none;">
+      <div class="crt-label">macro readout</div>
+      <div id="tl-out"><div class="crt-empty">// awaiting selection</div></div>
+    </div>
+  `;
+
+  const type = document.getElementById("tl-type");
+  const numField = document.getElementById("tl-num-field");
+  const num = document.getElementById("tl-num");
+  const out = document.getElementById("tl-out");
+
+  function update(){
+    const t = type.value;
+    if(!t){ out.innerHTML = ""; numField.style.display="none"; return; }
+    showMacroReadout("tl-out");
+    numField.style.display = "flex";
+    const n = parseInt(num.value || "1", 10);
+    if(t === "A"){
+      out.innerHTML = crtReadout([{label:"Offset", n:2000+n}]);
+    } else if(t === "B"){
+      out.innerHTML = crtReadout([
+        {label:"Length", n:2000+n},
+        {label:"Radius", n:2200+n},
+      ]);
+    } else if(t === "C"){
+      out.innerHTML = crtReadout([
+        {label:"Length", n:11000+n},
+        {label:"Wear",   n:10000+n},
+        {label:"Radius", n:13000+n},
+        {label:"Wear",   n:12000+n},
+      ]);
+    }
+  }
+
+  type.addEventListener("change", update);
+  num.addEventListener("input", update);
+}
+
+function renderAscii(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">ASCII Codes</p>
+    <p class="panel-desc">Macro variables #1&ndash;#26 mapped to their address letters (G, L, N, O and P are reserved and not addressable this way).</p>
+    <div class="field-row">
+      <div class="field">
+        <label for="asc-select">Address letter</label>
+        <select id="asc-select">
+          <option value="">Please choose</option>
+          ${Object.keys(ASCII_TABLE).map(l=>`<option value="${l}">${l}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="crt macro-readout-panel" style="display:none;">
+      <div class="crt-label">macro readout</div>
+      <div id="asc-out"><div class="crt-empty">// awaiting selection</div></div>
+    </div>
+  `;
+  const sel = document.getElementById("asc-select");
+  const out = document.getElementById("asc-out");
+  sel.addEventListener("change", ()=>{
+    const v = sel.value;
+    if(v){ showMacroReadout("asc-out"); out.innerHTML = crtReadout([{label:v, n:ASCII_TABLE[v]}]); } else { out.innerHTML = ""; }
+  });
+}
+
+function renderControl(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">Control Variables</p>
+    <p class="panel-desc">System macro variables for program, alarm, code-value and position data.</p>
+    <div class="field-row">
+      <div class="field">
+        <label for="ctl-select">Variable</label>
+        <select id="ctl-select">
+          <option value="">Please choose</option>
+          ${Object.keys(CONTROL_VARS).map(k=>`<option value="${k}">${k}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="crt macro-readout-panel" style="display:none;">
+      <div class="crt-label">macro readout</div>
+      <div id="ctl-out"><div class="crt-empty">// awaiting selection</div></div>
+      <div id="ctl-note"></div>
+    </div>
+  `;
+  const sel = document.getElementById("ctl-select");
+  const out = document.getElementById("ctl-out");
+  const noteEl = document.getElementById("ctl-note");
+  sel.addEventListener("change", ()=>{
+    const v = sel.value;
+    if(!v){ out.innerHTML = ""; noteEl.innerHTML=""; return; }
+    showMacroReadout("ctl-out");
+    const entry = CONTROL_VARS[v];
+    out.innerHTML = crtReadout(entry.macros);
+    noteEl.innerHTML = entry.note ? `<div class="note">${entry.note}</div>` : "";
+  });
+}
+
+function renderMath(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">Math Syntax</p>
+    <p class="panel-desc">Custom macro operation syntax. #i, #j and #k stand for any macro variable.</p>
+    <div class="field-row">
+      <div class="field">
+        <label for="mt-select">Operation</label>
+        <select id="mt-select">
+          <option value="">Please choose</option>
+          ${Object.keys(MATH_OPS).map(k=>`<option value="${k}">${k}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="crt macro-readout-panel" style="display:none;">
+      <div class="crt-label">syntax readout</div>
+      <div id="mt-out"><div class="crt-empty">// awaiting selection</div></div>
+      <div id="mt-note"></div>
+    </div>
+  `;
+  const sel = document.getElementById("mt-select");
+  const out = document.getElementById("mt-out");
+  const noteEl = document.getElementById("mt-note");
+  sel.addEventListener("change", ()=>{
+    const v = sel.value;
+    if(!v){ out.innerHTML = ""; noteEl.innerHTML=""; return; }
+    showMacroReadout("mt-out");
+    const entry = MATH_OPS[v];
+    out.innerHTML = `<div class="syntax">${entry.syntax}</div>`;
+    noteEl.innerHTML = entry.note ? `<div class="note">${entry.note}</div>` : "";
+  });
+}
+
+
+
+/* ===== Direct lookup / favourites / recent history ===== */
+const STORAGE_FAV = "fanucMacroFavourites";
+
+function loadList(key){
+  try{return JSON.parse(localStorage.getItem(key) || "[]");}
+  catch(e){return [];}
+}
+function saveList(key,value){
+  try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}
+}
+function macroCatalog(){
+  const items=[];
+  Object.entries(FIXTURE_FIXED).forEach(([label,base])=>{
+    AXES6.forEach((axis,i)=>items.push({n:base+i+1,title:`${label} ${axis}`,detail:"Fixture offset"}));
+  });
+  Object.entries(CONTROL_VARS).forEach(([title,entry])=>{
+    entry.macros.forEach(m=>items.push({n:m.n,title,detail:m.label}));
+  });
+  Object.entries(ASCII_TABLE).forEach(([letter,n])=>items.push({n,title:`ASCII ${letter}`,detail:"ASCII address macro"}));
+  for(let n=1;n<=200;n++){
+    items.push({n:2000+n,title:`Tool offset ${n}`,detail:"Offset type A"});
+    items.push({n:2200+n,title:`Tool offset ${n}`,detail:"Offset type B radius"});
+  }
+  for(let n=1;n<=48;n++){
+    const base=6980+20*n;
+    AXES6.forEach((axis,i)=>items.push({n:base+i+1,title:`G54.1 P${n} ${axis}`,detail:"Extended fixture offset"}));
+  }
+  return items;
+}
+const MACRO_CATALOG = macroCatalog();
+
+function lookupMacro(raw){
+  const cleaned=String(raw).trim().replace(/^#/,"");
+  if(!/^\d+$/.test(cleaned)) return {error:"Enter a macro number such as #5221."};
+  const n=Number(cleaned);
+  const matches=MACRO_CATALOG.filter(x=>x.n===n);
+  if(!matches.length) return {n,error:`#${n} is not in the current reference data.`};
+  return {n,matches};
+}
+function recordRecent(n){
+  // Recently Used has been removed; favourites remain available.
+}
+function toggleFavourite(n){
+  let fav=loadList(STORAGE_FAV);
+  fav=fav.includes(n)?fav.filter(x=>x!==n):[...fav,n];
+  saveList(STORAGE_FAV,fav); renderHistory();
+}
+function renderHistory(){
+  const host=document.getElementById("history-host");
+  if(!host)return;
+  const fav=loadList(STORAGE_FAV);
+  host.innerHTML = `
+    <div class="history-section">
+      <div class="history-title">Favourites</div>
+      <div class="history-list">
+        ${fav.length ? fav.map(n=>historyChip(n,true)).join("") : `<span class="hint">No favourites yet.</span>`}
+      </div>
+      
+    </div>`;
+  host.querySelectorAll("[data-history]").forEach(btn=>{
+    btn.addEventListener("click",()=>performLookup(btn.dataset.history));
+  });
+}
+function historyChip(n,fav){
+  return `<button class="history-chip" type="button" data-history="${n}">
+    <span>#${n}</span>${fav?"★":"↺"}
+  </button>`;
+}
+function performLookup(raw){
+  const input=document.getElementById("macro-lookup");
+  const out=document.getElementById("lookup-result");
+  input.value=String(raw).replace(/^#/,"");
+  const result=lookupMacro(raw);
+  if(result.error){
+    out.innerHTML=`<div class="lookup-result"><div class="result-title">No match</div><div class="result-meta">${result.error}</div></div>`;
+    return;
+  }
+  recordRecent(result.n);
+  const fav=loadList(STORAGE_FAV).includes(result.n);
+  out.innerHTML=`<div class="lookup-result">
+    <div class="favourite-row">
+      <div>
+        <div class="result-title">Macro lookup</div>
+        <div class="result-macro">#${result.n}</div>
+      </div>
+      <button class="star-btn ${fav?"active":""}" id="lookup-star" type="button" aria-label="${fav?"Remove from favourites":"Add to favourites"}">${fav?"★":"☆"}</button>
+    </div>
+    ${result.matches.map(m=>`<div class="result-meta"><strong>${m.title}</strong> · ${m.detail}</div>`).join("")}
+  </div>`;
+  document.getElementById("lookup-star").addEventListener("click",()=>{
+    toggleFavourite(result.n); performLookup(result.n);
+  });
+}
+function initMacroTools(){
+  renderHistory();
+  const input=document.getElementById("macro-lookup");
+  const button=document.getElementById("lookup-btn");
+  const clearLookup=document.getElementById("lookup-clear-btn");
+  const resetAll=document.getElementById("reset-all-btn");
+
+  button.addEventListener("click",()=>performLookup(input.value));
+
+  clearLookup.addEventListener("click",()=>{
+    input.value="";
+    document.getElementById("lookup-result").innerHTML="";
+    input.focus();
+  });
+
+  resetAll.addEventListener("click",()=>{
+    // Clear direct lookup.
+    input.value="";
+    document.getElementById("lookup-result").innerHTML="";
+
+    // Clear all selections and inputs in the current section.
+    document.querySelectorAll("#main-content select").forEach(select=>{
+      select.selectedIndex=0;
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+
+    document.querySelectorAll("#main-content input").forEach(field=>{
+      if(field.type==="number") field.value=field.min || "1";
+      else field.value="";
+      field.dispatchEvent(new Event("input",{bubbles:true}));
+    });
+
+    // Hide any macro readout panels.
+    document.querySelectorAll(".macro-readout-panel").forEach(panel=>{
+      panel.style.display="none";
+    });
+
+    // Remove any current search results.
+    const search=document.getElementById("global-search");
+    if(search) search.value="";
+    const results=document.getElementById("search-results");
+    if(results) results.innerHTML="";
+
+    input.focus();
+  });
+  input.addEventListener("keydown",e=>{if(e.key==="Enter")performLookup(input.value);});
+  const printReference = ()=>{
+    /*
+      COMPLETE REFERENCE PRINT
+      ------------------------
+      Build a standalone print document containing every reference section.
+      Nothing is taken from the currently selected screen, so the printout
+      is independent of the live form state.
+    */
+    const printWindow = window.open("", "_blank", "width=1100,height=850");
+
+    if(!printWindow){
+      alert("Please allow pop-ups for this file so the reference can be printed.");
+      return;
+    }
+
+    const esc = value => String(value)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+
+    const macroGrid = items => items.map(item=>`
+      <div class="macro-item">
+        <div class="macro-label">${esc(item.label)}</div>
+        <div class="macro-number">#${item.n}</div>
+      </div>
+    `).join("");
+
+    const card = (title, description, items) => `
+      <article class="reference-card">
+        <div class="card-header">
+          <div class="card-title">${esc(title)}</div>
+          <div class="card-description">${esc(description)}</div>
+        </div>
+        <div class="macro-grid">${macroGrid(items)}</div>
+      </article>
+    `;
+
+    /* ---------- Fixture Offsets ---------- */
+    const fixtureCards = Object.entries(FIXTURE_FIXED).map(([name,base]) =>
+      card(
+        name,
+        "Standard work coordinate system",
+        AXES6.map((axis,i)=>({label:axis,n:base+i+1}))
+      )
+    ).join("");
+
+    const extendedFixture = `
+      <div class="info-box">
+        <strong>G54.1 / G54.2 extended offsets</strong>
+        <p>
+          These are parameterised by offset number. Use the interactive
+          Fixture Offsets section for the selected P number and its complete
+          axis-by-axis macro mapping.
+        </p>
+      </div>`;
+
+    /* ---------- Tool Offsets ---------- */
+    const toolCards = `
+      ${card("Offset Type A","Single offset register",
+        [{label:"Tool 1",n:2001},{label:"Tool 2",n:2002},{label:"Tool 3",n:2003}])}
+      ${card("Offset Type B","Length and radius registers",
+        [{label:"Tool 1 Length",n:2001},{label:"Tool 1 Radius",n:2201},
+         {label:"Tool 2 Length",n:2002},{label:"Tool 2 Radius",n:2202},
+         {label:"Tool 3 Length",n:2003},{label:"Tool 3 Radius",n:2203}])}
+      ${card("Offset Type C","Length / wear / radius / wear",
+        [{label:"Tool 1 Length",n:11001},{label:"Tool 1 Wear",n:10001},
+         {label:"Tool 1 Radius",n:13001},{label:"Tool 1 Radius Wear",n:12001},
+         {label:"Tool 2 Length",n:11002},{label:"Tool 2 Wear",n:10002},
+         {label:"Tool 2 Radius",n:13002},{label:"Tool 2 Radius Wear",n:12002}])}
+      <div class="info-box">
+        <strong>Interactive range</strong>
+        <p>Tool offset numbers 1–200 are available from the interactive Tool Offsets section.</p>
+      </div>`;
+
+    /* ---------- ASCII ---------- */
+    const asciiCards = Object.entries(ASCII_TABLE).map(([letter,n])=>`
+      <div class="ascii-item">
+        <div class="ascii-letter">${esc(letter)}</div>
+        <div class="ascii-number">#${n}</div>
+      </div>
+    `).join("");
+
+    /* ---------- Control Variables ---------- */
+    const controlCards = Object.entries(CONTROL_VARS).map(([name,entry]) =>
+      card(name, entry.note || "System macro variable", entry.macros)
+    ).join("");
+
+    /* ---------- Math ---------- */
+    const mathRows = Object.entries(MATH_OPS).map(([name,entry])=>`
+      <tr>
+        <td><strong>${esc(name)}</strong></td>
+        <td class="code">${esc(entry.syntax)}</td>
+        <td>${entry.note ? esc(entry.note) : ""}</td>
+      </tr>
+    `).join("");
+
+    const printStyles = `
+      *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      html,body{margin:0;padding:0;background:#fff;color:#171a1d;font-family:Arial,Helvetica,sans-serif}
+      body{padding:15mm 14mm}
+      .print-header{border-bottom:3px solid #202428;padding-bottom:12px;margin-bottom:20px}
+      .brand{font-size:12px;font-weight:800;letter-spacing:3px;margin-bottom:5px}
+      h1{font-size:26px;margin:0 0 5px}
+      .header-note{font-size:11px;color:#555}
+      .print-section{margin:0;padding:0 0 8px}
+      .print-section.page{page-break-before:always}
+      h2{font-size:21px;margin:0 0 5px}
+      .section-subtitle{font-size:12px;color:#555;line-height:1.45;margin:0 0 14px}
+      .reference-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+      .reference-card{border:1px solid #999;border-radius:4px;break-inside:avoid;page-break-inside:avoid}
+      .card-header{padding:8px 10px;border-bottom:1px solid #ccc;background:#f1f1f1}
+      .card-title{font-size:13px;font-weight:800}
+      .card-description{font-size:10px;color:#666;margin-top:2px}
+      .macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:9px}
+      .macro-item{border:1px solid #ccc;border-radius:3px;padding:6px;background:#fff}
+      .macro-label{font-size:8px;text-transform:uppercase;color:#666;letter-spacing:.4px}
+      .macro-number{font:bold 14px monospace;margin-top:3px}
+      .info-box{margin-top:11px;border-left:3px solid #555;background:#f2f2f2;padding:8px 10px;font-size:10px;break-inside:avoid;page-break-inside:avoid}
+      .info-box strong{display:block;margin-bottom:3px}
+      .info-box p{margin:0;line-height:1.45}
+      .ascii-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+      .ascii-item{border:1px solid #999;border-radius:3px;padding:9px;text-align:center;break-inside:avoid}
+      .ascii-letter{font:bold 17px monospace}
+      .ascii-number{font:12px monospace;color:#555;margin-top:4px}
+      .math-table{width:100%;border-collapse:collapse;font-size:10.5px}
+      .math-table th,.math-table td{border:1px solid #999;padding:7px;text-align:left;vertical-align:top}
+      .math-table th{background:#eee}
+      .code{font-family:monospace;font-weight:700}
+      .print-footer{margin-top:18px;padding-top:8px;border-top:1px solid #aaa;font-size:9px;color:#666}
+      @page{margin:10mm}
+      @media screen{
+        body{max-width:1100px;margin:auto}
+        .print-section.page{margin-top:45px;border-top:2px solid #222;padding-top:20px}
+      }
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>FANUC Macro Reference — Complete Print</title>
+        <style>${printStyles}</style>
+      </head>
+      <body>
+        <header class="print-header">
+          <div class="brand">FANUC</div>
+          <h1>Macro Variable Reference</h1>
+          <div class="header-note">
+            Complete reference · Printed ${new Date().toLocaleDateString()}
+            · Always confirm against your control's parameter manual.
+          </div>
+        </header>
+
+        <section class="print-section">
+          <h2>Fixture Offsets</h2>
+          <p class="section-subtitle">
+            Work coordinate system macro variables — standard G54–G59, EXT,
+            and extended G54.1 / G54.2.
+          </p>
+          <div class="reference-grid">${fixtureCards}</div>
+          ${extendedFixture}
+        </section>
+
+        <section class="print-section page">
+          <h2>Tool Offsets</h2>
+          <p class="section-subtitle">
+            Tool offset macro variables by register type.
+            Type A is a single register; Type B splits length/radius;
+            Type C splits length/wear/radius/wear.
+          </p>
+          <div class="reference-grid">${toolCards}</div>
+        </section>
+
+        <section class="print-section page">
+          <h2>ASCII Codes</h2>
+          <p class="section-subtitle">
+            Macro variables mapped to their address letters.
+          </p>
+          <div class="ascii-grid">${asciiCards}</div>
+        </section>
+
+        <section class="print-section page">
+          <h2>Control Variables</h2>
+          <p class="section-subtitle">
+            System macro variables for program, alarm, code-value and position data.
+          </p>
+          <div class="reference-grid">${controlCards}</div>
+        </section>
+
+        <section class="print-section page">
+          <h2>Math Syntax</h2>
+          <p class="section-subtitle">
+            Custom macro operation syntax. #i, #j and #k stand for any macro variable.
+          </p>
+          <table class="math-table">
+            <thead>
+              <tr><th>Operation</th><th>Syntax</th><th>Note</th></tr>
+            </thead>
+            <tbody>${mathRows}</tbody>
+          </table>
+        </section>
+
+        <div class="print-footer">
+          FANUC Macro Reference · Interactive edition · Complete print reference
+        </div>
+      
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+
+</body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    /*
+      Wait for the standalone document to finish rendering, then print it.
+      The original macro window is never modified or printed.
+    */
+    printWindow.onload = ()=>{
+      setTimeout(()=>{
+        printWindow.focus();
+        printWindow.print();
+      },250);
+    };
+
+    printWindow.onafterprint = ()=>{
+      setTimeout(()=>printWindow.close(),150);
+    };
+  };
+
+  document.addEventListener("click",e=>{
+    const printKey=e.target.closest("[data-print-reference]");
+    if(printKey) printReference();
+
+    const copy=e.target.closest(".copy-macros");
+    if(copy)copyReadout(copy);
+  });
+}
+
+/* ---------------- global search ---------------- */
+const SEARCH_ENTRIES = [
+  ...Object.keys(CONTROL_VARS).map(k=>({section:"control", label:k, detail:"Control variable"})),
+  ...Object.keys(MATH_OPS).map(k=>({section:"math", label:k, detail:"Math operation"})),
+  ...Object.keys(ASCII_TABLE).map(k=>({section:"ascii", label:k, detail:`ASCII macro #${ASCII_TABLE[k]}`})),
+  ...Object.keys(FIXTURE_FIXED).map(k=>({section:"fixture", label:k, detail:`Fixture offset base #${FIXTURE_FIXED[k]}`})),
+  {section:"fixture",label:"G54.1",detail:"Extended fixture offsets"},
+  {section:"fixture",label:"G54.2",detail:"Extended fixture offsets"},
+  {section:"tool",label:"Offset type A",detail:"Tool offsets"},
+  {section:"tool",label:"Offset type B",detail:"Tool offsets"},
+  {section:"tool",label:"Offset type C",detail:"Tool offsets"},
+];
+
+function runSearch(query){
+  const results = document.getElementById("search-results");
+  const q = query.trim().toLowerCase();
+  if(!q){ results.innerHTML=""; return; }
+  const matches = SEARCH_ENTRIES.filter(x => `${x.label} ${x.detail}`.toLowerCase().includes(q)).slice(0,12);
+  results.innerHTML = matches.length ? `
+    <div class="crt" style="margin-bottom:18px;">
+      <div class="crt-label">search results · ${matches.length}</div>
+      <div class="readout-grid">
+        ${matches.map(x=>`<button class="navkey" style="text-align:left;" data-search-section="${x.section}">
+          <span class="num">→</span><span><strong>${x.label}</strong><br><small>${x.detail}</small></span>
+        </button>`).join("")}
+      </div>
+    </div>` : `<div class="empty-search">No matches for “${query}”.</div>`;
+  results.querySelectorAll("[data-search-section]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      active=btn.dataset.searchSection;
+      document.getElementById("global-search").value="";
+      results.innerHTML="";
+      render();
+      document.querySelector("main").scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  });
+}
+
+function initEnhancements(){
+  const search=document.getElementById("global-search");
+  const clear=document.getElementById("clear-search");
+  search.addEventListener("input",()=>runSearch(search.value));
+  clear.addEventListener("click",()=>{search.value="";search.focus();runSearch("");});
+  document.addEventListener("keydown",e=>{
+    if(e.target.matches("input,select,textarea")) return;
+    if(e.key>="1" && e.key<="5"){
+      active=SECTIONS[Number(e.key)-1].id; render();
+    }
+    if(e.key==="/" ){e.preventDefault();search.focus();}
+  });
+}
+
+const RENDERERS = {
+  fixture: renderFixture,
+  tool: renderTool,
+  ascii: renderAscii,
+  control: renderControl,
+  math: renderMath,
+};
+
+function render(){
+  renderNav();
+  RENDERERS[active]();
+}
+
+render();
+initEnhancements();
+initMacroTools();
+</script>
+</body>
+</html>
