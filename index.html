@@ -727,29 +727,31 @@
 
 
 
-/* ===== MOBILE / PWA NATIVE SCROLL CONTAINER ===== */
+/* ===== MOBILE NATIVE DOCUMENT SCROLL ===== */
 @media (max-width:760px){
   html{
-    height:100% !important;
-    min-height:0 !important;
-    overflow:hidden !important;
+    height:auto !important;
+    min-height:100% !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
   }
   body{
-    height:100dvh !important;
-    min-height:0 !important;
-    overflow:hidden !important;
+    height:auto !important;
+    min-height:100vh !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
     display:flex !important;
     flex-direction:column !important;
+    touch-action:auto !important;
+    overscroll-behavior-y:auto !important;
   }
   .shell{
-    flex:1 1 auto !important;
-    min-height:0 !important;
+    flex:0 0 auto !important;
+    width:100% !important;
     height:auto !important;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch !important;
-    overscroll-behavior-y:auto !important;
-    touch-action:pan-y !important;
+    min-height:0 !important;
+    overflow:visible !important;
+    touch-action:auto !important;
   }
   main{
     height:auto !important;
