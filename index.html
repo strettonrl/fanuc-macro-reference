@@ -796,6 +796,50 @@
   }
 }
 
+
+/* ===== ANDROID STANDALONE PWA SCROLL VIEWPORT ===== */
+#pwa-scroll{min-height:100%;}
+@media (display-mode:standalone), (display-mode:fullscreen){
+  html,body{
+    width:100% !important;
+    height:100% !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+  }
+  body{
+    display:block !important;
+    touch-action:auto !important;
+  }
+  #pwa-scroll{
+    width:100% !important;
+    height:100dvh !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:auto !important;
+    touch-action:pan-y !important;
+  }
+  #pwa-scroll > header,
+  #pwa-scroll > .shell,
+  #pwa-scroll > footer{
+    width:100% !important;
+  }
+  #pwa-scroll .shell{
+    display:flex !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+  #pwa-scroll main{
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -809,6 +853,7 @@
 
 </head>
 <body>
+<div id="pwa-scroll">
 
 <header>
   <div class="brand">
@@ -851,6 +896,7 @@
 
 <footer>FANUC Macro Reference &middot; Interactive edition &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
 
+</div>
 <script>
 /* ---------------- data ---------------- */
 
@@ -1639,7 +1685,7 @@ initMacroTools();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=16").catch(() => {});
   });
 }
 </script>

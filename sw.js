@@ -1,7 +1,7 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v15";
+const CACHE_NAME = "fanuc-macro-reference-v16";
 const SHELL = [
-  "./?v=15",
+  "./?v=16",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
@@ -18,20 +18,22 @@ self.addEventListener("install", event => {
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const req = event.request;
-  const isPage = req.mode === "navigate" ||
-                 req.destination === "document" ||
-                 req.url.endsWith("/index.html");
+  const page = req.mode === "navigate" ||
+               req.destination === "document" ||
+               req.url.endsWith("/index.html");
 
-  if (isPage) {
+  if (page) {
     event.respondWith(
       fetch(req, {cache:"no-store"})
         .then(res => {
@@ -40,7 +42,7 @@ self.addEventListener("fetch", event => {
           return res;
         })
         .catch(() => caches.match(req).then(c =>
-          c || caches.match("./?v=15") || caches.match("./index.html")
+          c || caches.match("./?v=16") || caches.match("./index.html")
         ))
     );
   } else {
