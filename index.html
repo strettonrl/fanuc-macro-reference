@@ -394,6 +394,9 @@
 
 .print-navkey{margin-top:8px;border-top-color:var(--amber-dim);}
 .print-navkey:hover{color:var(--amber);border-left-color:var(--amber);}
+.rotate-navkey{margin-top:4px;}
+.rotate-navkey:hover{color:var(--amber);border-left-color:var(--amber);}
+
 
 .panel-action.primary{color:var(--bg);background:var(--amber);border-color:var(--amber);}
 .panel-action.primary:hover{filter:brightness(1.05);}
@@ -887,6 +890,9 @@ function renderNav(){
     </button>`).join("") + `
     <button class="navkey print-navkey" type="button" data-print-reference>
       <span class="num">06</span>Print Reference
+    </button>
+    <button class="navkey rotate-navkey" type="button" data-rotate-landscape>
+      <span class="num">↔</span>Landscape
     </button>`;
   nav.querySelectorAll(".navkey").forEach(btn=>{
     btn.addEventListener("click", ()=>{ active = btn.dataset.id; render(); });
@@ -1491,9 +1497,31 @@ function initMacroTools(){
     const printKey=e.target.closest("[data-print-reference]");
     if(printKey) printReference();
 
+    const rotateKey=e.target.closest("[data-rotate-landscape]");
+    if(rotateKey) requestLandscape();
+
     const copy=e.target.closest(".copy-macros");
     if(copy)copyReadout(copy);
   });
+}
+
+
+async function requestLandscape(){
+  try{
+    if(screen.orientation && screen.orientation.lock){
+      await screen.orientation.lock("landscape");
+      return;
+    }
+  }catch(e){}
+
+  // If the browser refuses an orientation lock, tell the user what to do.
+  const result = document.getElementById("lookup-result");
+  if(result){
+    result.innerHTML = `<div class="lookup-result">
+      <div class="result-title">Landscape request</div>
+      <div class="result-meta">Your browser does not allow the web page to force rotation. Make sure Auto-rotate is enabled, then turn the phone sideways.</div>
+    </div>`;
+  }
 }
 
 /* ---------------- global search ---------------- */
