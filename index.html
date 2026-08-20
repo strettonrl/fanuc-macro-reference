@@ -22,7 +22,7 @@
     --radius:4px;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;min-height:100%;overflow-x:hidden;overflow-y:auto;}
   body{
     background:
       radial-gradient(ellipse at top left, #232a31 0%, var(--bg) 55%),
@@ -652,10 +652,7 @@
 
 /* ===== PHONE LANDSCAPE ===== */
 @media (max-width:760px) and (orientation:landscape){
-  body{
-    min-height:100dvh;
-    overflow-x:hidden;
-  }
+  body{min-height:100dvh;overflow-x:hidden;overflow-y:auto;}
   header .inner{
     min-height:52px;
     padding:7px 14px;
@@ -725,6 +722,29 @@
   .reset-area .reset-action{
     width:auto;
     min-width:150px;
+  }
+}
+
+
+/* ===== MOBILE SCROLL SAFEGUARD ===== */
+@media (max-width:760px){
+  html{
+    height:auto;
+    min-height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  body{
+    height:auto;
+    min-height:100dvh;
+    overflow-x:hidden;
+    overflow-y:auto;
+    touch-action:pan-y;
+  }
+  main{
+    height:auto;
+    min-height:0;
   }
 }
 
