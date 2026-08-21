@@ -1339,7 +1339,11 @@ function initMacroTools(){
   clearLookup.addEventListener("click",()=>{
     input.value="";
     document.getElementById("lookup-result").innerHTML="";
-    input.focus();
+    // Do not refocus the numeric lookup field on Android.
+    // Refocusing it immediately opens the on-screen keyboard.
+    if(document.activeElement && typeof document.activeElement.blur==="function"){
+      document.activeElement.blur();
+    }
   });
 
   resetAll.addEventListener("click",()=>{

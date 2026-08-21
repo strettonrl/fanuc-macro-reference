@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v16";
+const CACHE_NAME = "fanuc-macro-reference-v17";
 const SHELL = [
   "./?v=16",
   "./index.html",
