@@ -1,8 +1,8 @@
 {
-  "name": "FANUC Macro Reference",
-  "short_name": "FANUC Macros",
-  "description": "Interactive FANUC macro variable reference.",
-  "start_url": "./?v=16",
+  "name": "Probe & Macro Variable References",
+  "short_name": "Probe & Macro Ref",
+  "description": "FANUC macro variable and Renishaw Inspection Plus probing reference.",
+  "start_url": "./?v=60",
   "display": "standalone",
   "background_color": "#1b1f24",
   "theme_color": "#1b1f24",
