@@ -1149,6 +1149,11 @@
     .alarm-table{font-size:13px;}
   }
 
+
+.print-navkey{
+  text-transform:none !important;
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1185,9 +1190,9 @@
       <div class="lookup-box">
         <label for="macro-lookup">Direct macro lookup</label>
         <input id="macro-lookup" type="text" inputmode="numeric"
-               placeholder="Enter # number, e.g. 5221" autocomplete="off"
+               placeholder="Enter # or probing cycle, e.g. 5221 / P9814" autocomplete="off"
                aria-describedby="lookup-help">
-        <div id="lookup-help" class="hint">Press Enter to find the matching reference.</div>
+        <div id="lookup-help" class="hint">Enter a macro # or Renishaw probing cycle number (for example P9814).</div>
       </div>
       <button class="panel-action primary" id="lookup-btn" type="button">Lookup #</button>
       <button class="panel-action" id="lookup-clear-btn" type="button">Clear</button>
@@ -1311,7 +1316,7 @@ function renderNav(){
       <span class="num">${String(i+1).padStart(2,'0')}</span>${s.label}
     </button>`).join("") + `
     <button class="navkey print-navkey" type="button" data-print-reference>
-      <span class="num">08</span>FANUC Macro Reference Print
+      <span class="num">08</span>Fanuc Macro Reference Print
     </button>
 
     <button class="navkey print-navkey" type="button" data-print-renishaw-outputs>
@@ -1554,7 +1559,7 @@ const RENISHAW_CYCLES = [
   {
     id:"O9832", group:"Probe", name:"Probe start",
     purpose:"Switches the probe on and selects the operational modes for subsequent cycles. This cycle is compulsory before other probe cycles.",
-    format:"G65 P9832 [D d. W1.]",
+    format:"G65 P9832 [D W1.]",
     required:"None.",
     optional:"D1. Test mode ON; D2. Production mode ON; W1. Print flag.",
     outputs:"No cycle-output variables listed.",
@@ -2394,9 +2399,6 @@ function printSelectedRenishaw(c){
       <thead><tr><th>Macro</th><th>Output</th></tr></thead>
       <tbody>
         ${outputRows || `<tr><td class="code">—</td><td>No cycle-specific output table added for this cycle.</td></tr>`}
-        ${(c.id === "O9800" || c.id === "O9801 K1" || c.id === "O9801 K4" || c.id === "O9801 K5") ? "" : `
-        <tr><td class="code">#148</td><td>Out of tolerance flag (1 to 7)</td></tr>
-        <tr><td class="code">#149</td><td>Probe error flag (0 to 2)</td></tr>`}
       </tbody>
     </table>
   </section>
@@ -2776,11 +2778,6 @@ function renderRenishaw(){
       <div class="renishaw-toggle-panel" data-ren-panel="outputs">
         <div class="renishaw-output-heading">OUTPUT VARIABLES</div>
         <div class="renishaw-output-table">${renishawOutputRows(c)}</div>
-        ${(c.id === "O9800" || c.id === "O9801 K1" || c.id === "O9801 K4" || c.id === "O9801 K5") ? "" : `
-        <div class="renishaw-output-common">
-          <div><strong>#148</strong><span>Out of tolerance flag (1 to 7)</span></div>
-          <div><strong>#149</strong><span>Probe error flag (0 to 2)</span></div>
-        </div>`}
       </div>
 
       ${c.id === "O9800" ? `
@@ -3013,11 +3010,32 @@ function macroCatalog(){
   });
   Object.entries(ASCII_TABLE).forEach(([letter,n])=>items.push({n,title:`ASCII ${letter}`,detail:"ASCII address macro"}));
   RENISHAW_CYCLES.forEach(c=>{
-    const match = c.id.match(/O(\\d{4})/);
+    const match = c.id.match(/O(\d{4})/);
     if(match) items.push({n:Number(match[1]),title:`Renishaw ${c.id}`,detail:c.name});
   });
-  [135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,500,501,502,503,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519].forEach(n=>{
-    items.push({n,title:`Renishaw variable #${n}`,detail:"Inspection Plus reference variable"});
+  Object.entries(RENISHAW_OUTPUTS_BY_CYCLE).forEach(([cycleKey,rows])=>{
+    rows.forEach(([macro,label])=>{
+      const n = Number(String(macro).replace(/^#/,""));
+      if(Number.isFinite(n)){
+        items.push({
+          n,
+          title:`Renishaw ${cycleKey} output`,
+          detail:label
+        });
+      }
+    });
+  });
+  // Common Inspection Plus result flags are searchable here even though
+  // they are intentionally not repeated in every individual probing cycle.
+  items.push({
+    n:148,
+    title:"Renishaw Inspection Plus common output",
+    detail:"Out of tolerance flag (1 to 7)"
+  });
+  items.push({
+    n:149,
+    title:"Renishaw Inspection Plus common output",
+    detail:"Probe error flag (0 to 2)"
   });
   for(let n=1;n<=200;n++){
     items.push({n:2000+n,title:`Tool offset ${n}`,detail:"Offset type A"});
@@ -3032,8 +3050,8 @@ function macroCatalog(){
 const MACRO_CATALOG = macroCatalog();
 
 function lookupMacro(raw){
-  const cleaned=String(raw).trim().replace(/^#/,"");
-  if(!/^\d+$/.test(cleaned)) return {error:"Enter a macro number such as #5221."};
+  const cleaned=String(raw).trim().replace(/^#/,"").replace(/^[PO]/i,"");
+  if(!/^\d+$/.test(cleaned)) return {error:"Enter a macro number such as #5221, P9814 or O9814."};
   const n=Number(cleaned);
   const matches=MACRO_CATALOG.filter(x=>x.n===n);
   if(!matches.length) return {n,error:`#${n} is not in the current reference data.`};
@@ -3071,7 +3089,7 @@ function historyChip(n,fav){
 function performLookup(raw){
   const input=document.getElementById("macro-lookup");
   const out=document.getElementById("lookup-result");
-  input.value=String(raw).replace(/^#/,"");
+  input.value=String(raw).trim().replace(/^#/,"").replace(/^[PO]/i,"");
   const result=lookupMacro(raw);
   if(result.error){
     out.innerHTML=`<div class="lookup-result"><div class="result-title">No match</div><div class="result-meta">${result.error}</div></div>`;
@@ -3397,28 +3415,97 @@ const SEARCH_ENTRIES = [
   {section:"tool",label:"Offset type A",detail:"Tool offsets"},
   {section:"tool",label:"Offset type B",detail:"Tool offsets"},
   {section:"tool",label:"Offset type C",detail:"Tool offsets"},
+
+  // Renishaw cycles: index the cycle number plus all programming information.
+  ...RENISHAW_CYCLES.map(c=>({
+    section:"renishaw",
+    cycleId:c.id,
+    cycleGroup:c.group,
+    label:`${c.id} — ${c.name}`,
+    detail:`${c.group}. ${c.purpose} Format: ${c.format} Required: ${c.required} Optional: ${c.optional} Outputs: ${c.outputs} Example: ${c.example}`
+  })),
+
+  // Renishaw output variables from the actual cycle-output tables.
+  ...Object.entries(RENISHAW_OUTPUTS_BY_CYCLE).flatMap(([cycleKey,rows])=>
+    rows.map(([macro,label])=>({
+      section:"renishaw",
+      label:`${macro} — ${label}`,
+      detail:`Renishaw Inspection Plus output · ${cycleKey}`
+    }))
+  ),
+
+  // Common Inspection Plus result flags.
+  {section:"renishaw", label:"#148 — Out of tolerance flag (1 to 7)", detail:"Renishaw Inspection Plus common output variable"},
+  {section:"renishaw", label:"#149 — Probe error flag (0 to 2)", detail:"Renishaw Inspection Plus common output variable"},
+
+  // Renishaw alarm/message data.
+  ...RENISHAW_ALARMS.map(a=>({
+    section:"renalarms",
+    label:`Alarm ${a.code} — ${a.message}`,
+    detail:`Cause: ${a.cause} Action: ${a.action}`
+  })),
+  ...RENISHAW_91_MESSAGES.map(m=>({
+    section:"renalarms",
+    label:`Alarm 91 — ${m}`,
+    detail:"Renishaw programming / input alarm"
+  })),
+  ...RENISHAW_GENERAL_ALARMS.map(r=>({
+    section:"renalarms",
+    label:`${r[0]} — #148 flag ${r[1]}`,
+    detail:r[2]
+  })),
+  ...RENISHAW_CH9_MESSAGES.map(m=>({
+    section:"renalarms",
+    label:m.message,
+    detail:m.cause
+  }))
 ];
 
 function runSearch(query){
   const results = document.getElementById("search-results");
   const q = query.trim().toLowerCase();
   if(!q){ results.innerHTML=""; return; }
-  const matches = SEARCH_ENTRIES.filter(x => `${x.label} ${x.detail}`.toLowerCase().includes(q)).slice(0,12);
+
+  const matches = SEARCH_ENTRIES
+    .filter(x => `${x.label} ${x.detail}`.toLowerCase().includes(q))
+    .slice(0,20);
+
   results.innerHTML = matches.length ? `
     <div class="crt" style="margin-bottom:18px;">
       <div class="crt-label">search results · ${matches.length}</div>
       <div class="readout-grid">
-        ${matches.map(x=>`<button class="navkey" style="text-align:left;" data-search-section="${x.section}">
-          <span class="num">→</span><span><strong>${x.label}</strong><br><small>${x.detail}</small></span>
+        ${matches.map((x,i)=>`<button class="navkey" style="text-align:left;"
+          data-search-index="${i}">
+          <span class="num">→</span>
+          <span><strong>${x.label}</strong><br><small>${x.detail}</small></span>
         </button>`).join("")}
       </div>
     </div>` : `<div class="empty-search">No matches for “${query}”.</div>`;
-  results.querySelectorAll("[data-search-section]").forEach(btn=>{
+
+  results.querySelectorAll("[data-search-index]").forEach(btn=>{
     btn.addEventListener("click",()=>{
-      active=btn.dataset.searchSection;
+      const x = matches[Number(btn.dataset.searchIndex)];
+      active = x.section;
       document.getElementById("global-search").value="";
       results.innerHTML="";
       render();
+
+      // If this is a specific Renishaw cycle result, open that exact cycle.
+      if(x.section === "renishaw" && x.cycleId && x.cycleGroup){
+        const group = document.getElementById("ren-group");
+        const cycle = document.getElementById("ren-cycle");
+        if(group && cycle){
+          group.value = x.cycleGroup;
+          group.dispatchEvent(new Event("change",{bubbles:true}));
+          const sameGroup = RENISHAW_CYCLES.filter(c=>c.group===x.cycleGroup);
+          const idx = sameGroup.findIndex(c=>c.id===x.cycleId);
+          if(idx >= 0){
+            cycle.value = String(idx);
+            cycle.dispatchEvent(new Event("change",{bubbles:true}));
+          }
+        }
+      }
+
       document.querySelector("main").scrollIntoView({behavior:"smooth",block:"start"});
     });
   });
@@ -3460,7 +3547,7 @@ initMacroTools();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=60").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=65").catch(() => {});
   });
 }
 </script>
