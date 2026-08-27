@@ -1154,6 +1154,82 @@
   text-transform:none !important;
 }
 
+
+.custom-macro-actions{
+  display:flex;
+  justify-content:flex-start;
+  margin:-6px 0 18px;
+}
+.custom-macro-panel{
+  margin:0 0 22px;
+  padding:16px;
+  border:1px solid #4b3918;
+  background:#11151a;
+  border-radius:var(--radius);
+}
+.custom-macro-title{
+  color:var(--amber);
+  font:600 18px 'Oswald',sans-serif;
+  margin-bottom:14px;
+}
+.custom-macro-button-row{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin:10px 0 8px;
+}
+.custom-macro-list{
+  margin-top:14px;
+  display:grid;
+  gap:8px;
+}
+.custom-macro-item{
+  display:grid;
+  grid-template-columns:minmax(90px,130px) 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:10px 11px;
+  border:1px solid var(--panel-line);
+  background:var(--panel-deep);
+}
+.custom-macro-item .macro{
+  color:var(--amber);
+  font:700 16px 'Space Mono',monospace;
+}
+.custom-macro-item .description{
+  color:var(--text);
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+.custom-macro-delete{
+  border:1px solid var(--panel-line);
+  background:transparent;
+  color:var(--text-dim);
+  padding:7px 9px;
+  cursor:pointer;
+  border-radius:var(--radius);
+  font:600 10px 'Oswald',sans-serif;
+  text-transform:uppercase;
+}
+.custom-macro-delete:hover{color:var(--amber);border-color:var(--amber-dim);}
+@media(max-width:650px){
+  .custom-macro-item{
+    grid-template-columns:1fr auto;
+  }
+  .custom-macro-item .description{
+    grid-column:1 / -1;
+    grid-row:2;
+  }
+}
+
+
+.app-version{
+  color:var(--amber);
+  font-weight:700;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1198,6 +1274,32 @@
       <button class="panel-action" id="lookup-clear-btn" type="button">Clear</button>
     </section>
     <div id="lookup-result" aria-live="polite"></div>
+    <div class="custom-macro-actions">
+      <button class="panel-action" id="custom-macro-toggle" type="button">Add Custom Macro</button>
+    </div>
+
+    <section id="custom-macro-panel" class="custom-macro-panel" style="display:none;" aria-label="Custom macros">
+      <div class="custom-macro-title">My Custom Macros</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="custom-macro-number">Macro number</label>
+          <input id="custom-macro-number" type="text" inputmode="numeric"
+                 placeholder="e.g. 600" autocomplete="off">
+        </div>
+        <div class="field" style="flex:2;min-width:260px;">
+          <label for="custom-macro-description">Description</label>
+          <input id="custom-macro-description" type="text"
+                 placeholder="e.g. Fixture clamp status" autocomplete="off">
+        </div>
+      </div>
+      <div class="custom-macro-button-row">
+        <button class="panel-action primary" id="custom-macro-save" type="button">Save Macro</button>
+        <button class="panel-action" id="custom-macro-cancel" type="button">Close</button>
+      </div>
+      <div id="custom-macro-message" class="hint" aria-live="polite"></div>
+      <div id="custom-macro-list"></div>
+    </section>
+
     <div id="main-content"></div>
     <div id="history-host"></div>
     <div class="reset-area">
@@ -1207,7 +1309,7 @@
   </main>
 </div>
 
-<footer>FANUC Macro Reference &middot; Interactive edition &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
+<footer>FANUC Macro Reference &middot; Interactive edition &middot; <strong class="app-version">Version v67</strong> &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
 
 </div>
 <script>
@@ -2993,6 +3095,80 @@ function renderRenishaw(){
 /* ===== Direct lookup / favourites / recent history ===== */
 const STORAGE_FAV = "fanucMacroFavourites";
 
+const STORAGE_CUSTOM_MACROS = "fanucCustomMacros";
+
+function loadCustomMacros(){
+  try{
+    const data = JSON.parse(localStorage.getItem(STORAGE_CUSTOM_MACROS) || "[]");
+    return Array.isArray(data) ? data.filter(x=>x && Number.isFinite(Number(x.n)) && String(x.description||"").trim()) : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveCustomMacros(items){
+  try{
+    localStorage.setItem(STORAGE_CUSTOM_MACROS, JSON.stringify(items));
+  }catch(e){}
+}
+
+function normaliseCustomMacroNumber(raw){
+  const cleaned = String(raw || "").trim().replace(/^#/,"");
+  if(!/^\d+$/.test(cleaned)) return null;
+  const n = Number(cleaned);
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
+}
+
+function upsertCustomMacro(n, description){
+  const items = loadCustomMacros();
+  const idx = items.findIndex(x=>Number(x.n)===n);
+  const entry = {n, description:String(description).trim()};
+  if(idx >= 0) items[idx] = entry;
+  else items.push(entry);
+  items.sort((a,b)=>Number(a.n)-Number(b.n));
+  saveCustomMacros(items);
+}
+
+function deleteCustomMacro(n){
+  saveCustomMacros(loadCustomMacros().filter(x=>Number(x.n)!==Number(n)));
+}
+
+function renderCustomMacroList(){
+  const host = document.getElementById("custom-macro-list");
+  if(!host) return;
+  const items = loadCustomMacros();
+
+  host.innerHTML = items.length ? `
+    <div class="custom-macro-list">
+      ${items.map(x=>`
+        <div class="custom-macro-item">
+          <div class="macro">#${x.n}</div>
+          <div class="description">${escapeHtml(x.description)}</div>
+          <button class="custom-macro-delete" type="button" data-delete-custom="${x.n}">Delete</button>
+        </div>
+      `).join("")}
+    </div>` : `<div class="hint">No custom macros saved yet.</div>`;
+
+  host.querySelectorAll("[data-delete-custom]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      deleteCustomMacro(Number(btn.dataset.deleteCustom));
+      renderCustomMacroList();
+      const msg=document.getElementById("custom-macro-message");
+      if(msg) msg.textContent="Custom macro deleted.";
+    });
+  });
+}
+
+function escapeHtml(value){
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
 function loadList(key){
   try{return JSON.parse(localStorage.getItem(key) || "[]");}
   catch(e){return [];}
@@ -3054,6 +3230,13 @@ function lookupMacro(raw){
   if(!/^\d+$/.test(cleaned)) return {error:"Enter a macro number such as #5221, P9814 or O9814."};
   const n=Number(cleaned);
   const matches=MACRO_CATALOG.filter(x=>x.n===n);
+  loadCustomMacros()
+    .filter(x=>Number(x.n)===n)
+    .forEach(x=>matches.push({
+      n,
+      title:"My Custom Macro",
+      detail:x.description
+    }));
   if(!matches.length) return {n,error:`#${n} is not in the current reference data.`};
   return {n,matches};
 }
@@ -3150,6 +3333,12 @@ function initMacroTools(){
       panel.style.display="none";
     });
 
+    // Close the custom-macro editor but preserve saved custom macros.
+    const customPanel=document.getElementById("custom-macro-panel");
+    if(customPanel) customPanel.style.display="none";
+    const customMessage=document.getElementById("custom-macro-message");
+    if(customMessage) customMessage.textContent="";
+
     // Remove any current search results.
     const search=document.getElementById("global-search");
     if(search) search.value="";
@@ -3163,6 +3352,56 @@ function initMacroTools(){
     }
   });
   input.addEventListener("keydown",e=>{if(e.key==="Enter")performLookup(input.value);});
+
+  const customToggle=document.getElementById("custom-macro-toggle");
+  const customPanel=document.getElementById("custom-macro-panel");
+  const customNumber=document.getElementById("custom-macro-number");
+  const customDescription=document.getElementById("custom-macro-description");
+  const customSave=document.getElementById("custom-macro-save");
+  const customCancel=document.getElementById("custom-macro-cancel");
+  const customMessage=document.getElementById("custom-macro-message");
+
+  function setCustomPanel(open){
+    customPanel.style.display=open ? "" : "none";
+    if(open){
+      renderCustomMacroList();
+      if(document.activeElement && typeof document.activeElement.blur==="function"){
+        document.activeElement.blur();
+      }
+    }
+  }
+
+  customToggle.addEventListener("click",()=>setCustomPanel(customPanel.style.display==="none"));
+  customCancel.addEventListener("click",()=>setCustomPanel(false));
+
+  customSave.addEventListener("click",()=>{
+    const n=normaliseCustomMacroNumber(customNumber.value);
+    const description=customDescription.value.trim();
+
+    if(!n){
+      customMessage.textContent="Enter a valid macro number.";
+      return;
+    }
+    if(!description){
+      customMessage.textContent="Enter a description for the macro.";
+      return;
+    }
+
+    upsertCustomMacro(n,description);
+    customMessage.textContent=`Saved #${n}.`;
+    customNumber.value="";
+    customDescription.value="";
+    renderCustomMacroList();
+
+    if(document.activeElement && typeof document.activeElement.blur==="function"){
+      document.activeElement.blur();
+    }
+  });
+
+  customDescription.addEventListener("keydown",e=>{
+    if(e.key==="Enter") customSave.click();
+  });
+
   const printReference = ()=>{
     /*
       COMPLETE REFERENCE PRINT
@@ -3466,7 +3705,17 @@ function runSearch(query){
   const q = query.trim().toLowerCase();
   if(!q){ results.innerHTML=""; return; }
 
-  const matches = SEARCH_ENTRIES
+  const searchableEntries = [
+    ...SEARCH_ENTRIES,
+    ...loadCustomMacros().map(x=>({
+      section:"fixture",
+      customMacro:true,
+      label:`#${x.n} — ${x.description}`,
+      detail:"My custom macro"
+    }))
+  ];
+
+  const matches = searchableEntries
     .filter(x => `${x.label} ${x.detail}`.toLowerCase().includes(q))
     .slice(0,20);
 
@@ -3547,7 +3796,7 @@ initMacroTools();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=65").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=67").catch(() => {});
   });
 }
 </script>
