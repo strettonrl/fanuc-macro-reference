@@ -1,7 +1,7 @@
 
-const CACHE_NAME = "fanuc-macro-reference-v67";
+const CACHE_NAME = "fanuc-macro-reference-v69";
 const SHELL = [
-  "./?v=67",
+  "./?v=69",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
@@ -36,7 +36,7 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(c => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match(req).then(c => c || caches.match("./?v=67") || caches.match("./index.html")))
+        .catch(() => caches.match(req).then(c => c || caches.match("./?v=69") || caches.match("./index.html")))
     );
   } else {
     event.respondWith(caches.match(req).then(c => c || fetch(req)));

@@ -1230,6 +1230,82 @@
   white-space:nowrap;
 }
 
+
+.cnc-macro-table-card{overflow:hidden;}
+.cnc-table-wrap{overflow-x:auto;}
+.cnc-macro-table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:760px;
+  font-size:14px;
+}
+.cnc-macro-table th,
+.cnc-macro-table td{
+  border:1px solid var(--panel-line);
+  padding:11px 12px;
+  text-align:left;
+  vertical-align:top;
+  line-height:1.45;
+}
+.cnc-macro-table th{
+  background:#1b2731;
+  color:var(--amber);
+  font:600 14px 'Oswald',sans-serif;
+  letter-spacing:.03em;
+}
+.cnc-macro-table td{color:var(--text-dim);}
+.cnc-macro-table .cnc-range{
+  color:var(--amber);
+  font:700 14px 'Space Mono',monospace;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  .cnc-macro-table{font-size:13px;min-width:680px;}
+  .cnc-macro-table th,.cnc-macro-table td{padding:9px 10px;}
+}
+
+
+.conditional-card{margin-bottom:14px;}
+.conditional-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.conditional-grid > div{
+  display:grid;
+  grid-template-columns:90px 1fr;
+  gap:10px;
+  align-items:center;
+  padding:9px 10px;
+  border:1px solid var(--panel-line);
+  background:var(--panel-deep);
+}
+.conditional-grid strong{
+  color:var(--amber);
+  font:700 15px 'Space Mono',monospace;
+}
+.conditional-grid span{color:var(--text-dim);}
+.conditional-code{
+  margin:10px 0 8px;
+  padding:12px 14px;
+  border-left:3px solid var(--amber);
+  background:#0e1216;
+  color:var(--amber);
+  font:700 18px 'Space Mono',monospace;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.conditional-card p{
+  margin:0;
+  color:var(--text-dim);
+  line-height:1.55;
+}
+@media(max-width:700px){
+  .conditional-grid{grid-template-columns:1fr;}
+  .conditional-code{font-size:16px;}
+}
+
 </style>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1309,7 +1385,7 @@
   </main>
 </div>
 
-<footer>FANUC Macro Reference &middot; Interactive edition &middot; <strong class="app-version">Version v67</strong> &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
+<footer>FANUC Macro Reference &middot; Interactive edition &middot; <strong class="app-version">Version v69</strong> &middot; Modernized from a 2008 VB6 tool by R. Stretton &middot; <span>reference only &mdash; always confirm against your control's parameter manual</span></footer>
 
 </div>
 <script>
@@ -1373,12 +1449,48 @@ const MATH_OPS = {
   "Logarithm":         { syntax:"#i = LN[#j]" },
 };
 
+
+const CNC_MACRO_TABLE = [
+  {
+    range:"#0",
+    type:"NULL",
+    function:"#0 is read-only and cannot be given another value than NULL. It is used to set other variables to NULL or to compare variables."
+  },
+  {
+    range:"#1 - #33",
+    type:"Local variables",
+    function:"These are used to pass arguments to macros and are local to the macro only."
+  },
+  {
+    range:"#100 - #199",
+    type:"Common variables",
+    function:"These are common variables that are shared between macros and main programs. They will be cleared to NULL when a new program starts or when you exit the simulator."
+  },
+  {
+    range:"#500 - #999",
+    type:"Common permanent variables",
+    function:"These variables are remembered between runs and even when you exit the simulator."
+  },
+  {
+    range:"#300 - #399",
+    type:"Simulator specific reserved range",
+    function:"In this range, which is not used by the Fanuc controller, we store some system values specific to the simulator."
+  },
+  {
+    range:"#1000 - #9999",
+    type:"System variables",
+    function:"These variables contain information from the CNC controller or, in this case, the simulator. We have made them empty so users can assign simulator values to any numbers for maximal flexibility. On a Fanuc controller, they are fixed."
+  }
+];
+
 const SECTIONS = [
   { id:"fixture", label:"Fixture Offsets" },
   { id:"tool",    label:"Tool Offsets" },
   { id:"ascii",   label:"ASCII Codes" },
   { id:"control", label:"Control Variables" },
   { id:"math",    label:"Math Syntax" },
+  { id:"cnctable", label:"CNC Macro Table Numbers" },
+  { id:"conditional", label:"Conditional Expressions" },
   { id:"renishaw", label:"Renishaw Probing" },
   { id:"renalarms", label:"Renishaw Probe Alarms" },
 ];
@@ -1418,11 +1530,11 @@ function renderNav(){
       <span class="num">${String(i+1).padStart(2,'0')}</span>${s.label}
     </button>`).join("") + `
     <button class="navkey print-navkey" type="button" data-print-reference>
-      <span class="num">08</span>Fanuc Macro Reference Print
+      <span class="num">10</span>Fanuc Macro Reference Print
     </button>
 
     <button class="navkey print-navkey" type="button" data-print-renishaw-outputs>
-      <span class="num">09</span>Renishaw Output Reference Print
+      <span class="num">11</span>Renishaw Output Reference Print
     </button>`;
   nav.querySelectorAll(".navkey").forEach(btn=>{
     btn.addEventListener("click", ()=>{ active = btn.dataset.id; render(); });
@@ -2817,6 +2929,101 @@ function renderRenishawAlarms(){
   });
 }
 
+
+function renderCncMacroTable(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">CNC Macro Table Numbers</p>
+    <p class="panel-desc">CNC macro variable number ranges, types and functions.</p>
+
+    <div class="crt cnc-macro-table-card">
+      <div class="crt-label">CNC Macro Variable Number Ranges</div>
+      <div class="cnc-table-wrap">
+        <table class="cnc-macro-table">
+          <thead>
+            <tr>
+              <th>Variable range</th>
+              <th>Type</th>
+              <th>Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${CNC_MACRO_TABLE.map(row=>`
+              <tr>
+                <td class="cnc-range">${row.range}</td>
+                <td>${row.type}</td>
+                <td>${row.function}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+
+function renderConditionalExpressions(){
+  const main = document.getElementById("main-content");
+  main.innerHTML = `
+    <p class="panel-title">Conditional Expressions</p>
+    <p class="panel-desc">
+      Conditional expressions are used for decision making within a macro. They compare
+      two variables or arithmetic expressions and decide whether the expression is TRUE or FALSE.
+      Conditional expressions are written inside square brackets.
+    </p>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">Conditional operators</div>
+      <div class="conditional-grid">
+        <div><strong>EQ</strong><span>Equal to</span></div>
+        <div><strong>NE</strong><span>Not equal to</span></div>
+        <div><strong>LT</strong><span>Less than</span></div>
+        <div><strong>LE</strong><span>Less than or equal to</span></div>
+        <div><strong>GT</strong><span>Greater than</span></div>
+        <div><strong>GE</strong><span>Greater than or equal to</span></div>
+        <div><strong>AND</strong><span>And</span></div>
+        <div><strong>OR</strong><span>Or</span></div>
+      </div>
+    </div>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">Basic comparison</div>
+      <div class="conditional-code">[#4GT#2]</div>
+      <p>This is TRUE when variable 4 is greater than variable 2.</p>
+    </div>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">Testing more than one condition</div>
+      <div class="conditional-code">[#4GT#2AND#4GT#3]</div>
+      <p>This expression is TRUE only when variable 4 is greater than both variable 2 and variable 3.</p>
+    </div>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">IF / THEN</div>
+      <div class="conditional-code">IF[#4EQ3] THEN #2=2</div>
+      <p>Set variable 2 to 2 only when variable 4 is 3.</p>
+    </div>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">IF / GOTO</div>
+      <div class="conditional-code">IF[#4LE#1] GOTO 100</div>
+      <p>Go to block number 100 only if variable 4 is less than or equal to variable 1.</p>
+    </div>
+
+    <div class="crt conditional-card">
+      <div class="crt-label">WHILE loop</div>
+      <div class="conditional-code">WHILE[#5LT100]DO1<br>#5=#5+1<br>END1</div>
+      <p>These blocks loop until variable #5 reaches 100.</p>
+    </div>
+
+    <div class="note">
+      Conditional expressions are used with conditional variables, loops and branches
+      such as <strong>IF</strong>, <strong>THEN</strong>, <strong>GOTO</strong> and <strong>WHILE</strong>.
+    </div>
+  `;
+}
+
 function renderRenishaw(){
   const main = document.getElementById("main-content");
   main.innerHTML = `
@@ -3230,6 +3437,17 @@ function lookupMacro(raw){
   if(!/^\d+$/.test(cleaned)) return {error:"Enter a macro number such as #5221, P9814 or O9814."};
   const n=Number(cleaned);
   const matches=MACRO_CATALOG.filter(x=>x.n===n);
+  const cncRanges = [
+    {min:0,max:0,title:"CNC Macro Table #0",detail:"NULL — #0 is read-only and cannot be given another value than NULL."},
+    {min:1,max:33,title:"CNC Macro Table #1 - #33",detail:"Local variables — used to pass arguments to macros and local to the macro only."},
+    {min:100,max:199,title:"CNC Macro Table #100 - #199",detail:"Common variables — shared between macros and main programs."},
+    {min:300,max:399,title:"CNC Macro Table #300 - #399",detail:"Simulator specific reserved range."},
+    {min:500,max:999,title:"CNC Macro Table #500 - #999",detail:"Common permanent variables."},
+    {min:1000,max:9999,title:"CNC Macro Table #1000 - #9999",detail:"System variables."}
+  ];
+  cncRanges
+    .filter(r=>n>=r.min && n<=r.max)
+    .forEach(r=>matches.push({n,title:r.title,detail:r.detail}));
   loadCustomMacros()
     .filter(x=>Number(x.n)===n)
     .forEach(x=>matches.push({
@@ -3654,6 +3872,23 @@ const SEARCH_ENTRIES = [
   {section:"tool",label:"Offset type A",detail:"Tool offsets"},
   {section:"tool",label:"Offset type B",detail:"Tool offsets"},
   {section:"tool",label:"Offset type C",detail:"Tool offsets"},
+  ...CNC_MACRO_TABLE.map(row=>({
+    section:"cnctable",
+    label:`${row.range} — ${row.type}`,
+    detail:row.function
+  })),
+  {section:"conditional",label:"Conditional Expressions",detail:"Decision making with TRUE/FALSE comparisons inside square brackets"},
+  {section:"conditional",label:"EQ",detail:"Equal to conditional operator"},
+  {section:"conditional",label:"NE",detail:"Not equal to conditional operator"},
+  {section:"conditional",label:"LT",detail:"Less than conditional operator"},
+  {section:"conditional",label:"LE",detail:"Less than or equal to conditional operator"},
+  {section:"conditional",label:"GT",detail:"Greater than conditional operator"},
+  {section:"conditional",label:"GE",detail:"Greater than or equal to conditional operator"},
+  {section:"conditional",label:"AND",detail:"Logical AND in a conditional expression"},
+  {section:"conditional",label:"OR",detail:"Logical OR in a conditional expression"},
+  {section:"conditional",label:"IF THEN",detail:"IF[#4EQ3] THEN #2=2"},
+  {section:"conditional",label:"IF GOTO",detail:"IF[#4LE#1] GOTO 100"},
+  {section:"conditional",label:"WHILE loop",detail:"WHILE[#5LT100]DO1 ... END1"},
 
   // Renishaw cycles: index the cycle number plus all programming information.
   ...RENISHAW_CYCLES.map(c=>({
@@ -3780,6 +4015,8 @@ const RENDERERS = {
   ascii: renderAscii,
   control: renderControl,
   math: renderMath,
+  cnctable: renderCncMacroTable,
+  conditional: renderConditionalExpressions,
   renishaw: renderRenishaw,
   renalarms: renderRenishawAlarms,
 };
@@ -3796,7 +4033,7 @@ initMacroTools();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=67").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=69").catch(() => {});
   });
 }
 </script>
